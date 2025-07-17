@@ -1,0 +1,17 @@
+Is physical? True
+lambda = 0.006
+g = 0.74988
+vev = 500 MeV
+m_phi = 54.772255750516614 MeV
+m_Z = 374.94 MeV
+T_crit = 115.75 MeV
+T_nuc = 16.5551578468999 MeV
+T_perc = 11.717986074050248 MeV
+T_completion = 7.162543663495595 MeV
+T_min = 0 MeV
+T_reh = 53.94222337302759 MeV
+Minimal value of P_f = 6.5761692025449385e-12
+alpha = 448.0590592415618, alpha_inf = 23.12275906483883, alpha_eq = 9.649904529281113
+gamma_* = 3.36768025568821e+18, gamma_eq = 44.03528541524124
+Is runaway? True
+RH = 0.6343169881600335
