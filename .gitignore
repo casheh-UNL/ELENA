@@ -1,3 +1,16 @@
+!.gitignore
+*.core
+.*
+./.git/objects/28/49c3623d08395098adcfbbb7827f447ee41db7
+./.git/objects/56/c6871a72c6f1eff4ded1a3f4a6c0b2ad4161a2
+./data/raw/nanograv_data/30fCP_30fiRN_2A.core
+./data/raw/nanograv_data/30fCP_30fiRN_3A.core
+.DS_Store
+__pycache__/
+data/raw/nanograv_data/30fCP_30fiRN_2A.core
+data/raw/nanograv_data/30fCP_30fiRN_3A.core
+notebooks/violin_plot_data.npy
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
