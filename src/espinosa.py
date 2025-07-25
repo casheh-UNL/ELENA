@@ -147,7 +147,7 @@ class Vt_vec:
         - compute_sums: computes a discretized approximation of the integrand in eq. 37 for all phi_0 values
     """
 
-    def __init__(self, T, V, dV, step_phi = 1e-2, precision = 1e-2, d = 3, vev0 = 100, int_threshold = 2e-1, ratio_vev_step0 = 50, save_all = False):
+    def __init__(self, T, V, dV, step_phi = 1e-3, precision = 1e-3, d = 3, vev0 = 100, int_threshold = 2e-1, ratio_vev_step0 = 50, save_all = False):
         global Tbarrier, Tsmooth
         self.save_all = save_all
 

@@ -1,4 +1,6 @@
 import numpy as np
+from numpy.linalg import lstsq
+from scipy.integrate import cumulative_trapezoid
 
 from dof_interpolation import g_rho
 
@@ -14,6 +16,39 @@ def alpha_th_bar(T, m, V_min_value, false_vev, true_vev, units = 'GeV'):
     wf_DS = - T * m.dVdT(false_vev[T], T, include_radiation=True, include_SM = False, units = units)
 
     return (delta_rho - delta_p) / (3 * wf), (delta_rho - delta_p) / (3 * wf_DS)
+    
+
+def beta(Temps, ratio_V, Gamma, H, T_nuc, T_perc, verbose = False):
+    idx_nuc = np.argmin(np.abs(Temps - T_nuc))
+    idx_perc = np.argmin(np.abs(Temps - T_perc))
+
+    Gamma_n = Gamma[idx_nuc]
+    H_n = H[idx_nuc]
+
+    times = cumulative_trapezoid(-np.flip((ratio_V[idx_perc:idx_nuc+1] / (3 * H[idx_perc:idx_nuc+1]))), np.flip(Temps[idx_perc:idx_nuc+1]), initial=0)
+    times = np.flip(times)
+
+    t = np.flip(H_n*times)
+    ft = np.flip(Gamma[idx_perc:idx_nuc+1]/Gamma_n)
+    ln_ft = np.log(ft)
+
+    # Create the design matrix
+    X = np.vstack((t, t**2)).T  # Stack t and t^2 as columns to create a design matrix
+
+    # Fit
+    coefs, _, _, _ = lstsq(X, ln_ft, rcond=None)  # Fit 'ln_ft' against 't' and 't^2'
+
+    # Extract coefficients
+    a_fit = coefs[0]  # Coefficient for the linear term (t)
+    b_fit = coefs[1]  # Coefficient for the quadratic term (t^2)
+
+    beta_Hn = a_fit
+    gamma_Hn = np.sqrt(- 2 * b_fit)
+
+    if verbose:
+        return beta_Hn, gamma_Hn, t, np.flip(Gamma[idx_perc:idx_nuc+1]), np.flip(Temps[idx_perc:idx_nuc+1]), np.flip(H[idx_perc:idx_nuc+1])
+    else:
+        return beta_Hn, gamma_Hn
     
 
 class GW_SuperCooled:
