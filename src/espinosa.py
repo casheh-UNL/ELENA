@@ -297,7 +297,7 @@ class Vt_vec:
         # Broadcast phi and phi0 for comparison
         phi_broadcasted = self.phi[np.newaxis, :]  
         phi0_broadcasted = self.phi0[:, np.newaxis]  
-        
+
         # Create a mask where phi < phi0[j] (the integrand is zero at the endpoint phi0)
         mask = phi_broadcasted < phi0_broadcasted
         self.mask = mask
@@ -313,23 +313,7 @@ class Vt_vec:
         self.non_zero_in_integrand = np.array([np.sum(sub_array > 0) for sub_array in self.integrand])
         sums = np.sum(self.integrand, axis=1)
 
-        continuity_mask = np.ones_like(sums, dtype=bool)
-        for i in range(1, len(sums) - 1):
-            if sums[i - 1] != 0 and sums[i + 1] != 0:
-                mean_adjacent = np.mean([sums[i - 1], sums[i + 1]])
-                if sums[i] / mean_adjacent < 1e-3:
-                    continuity_mask[i] = False
-
-        temp_mask = (sums > 0) & (self.non_zero_in_integrand / len(self.phi) > self.int_threshold) & (continuity_mask)
-        if np.sum(temp_mask) > 0:
-            sums_mask = temp_mask
-        else:
-            temp_mask = (sums > 0) & (continuity_mask)
-            if np.sum(temp_mask) > 0:
-                sums_mask = temp_mask
-            else:
-                sums_mask = (sums > 0)
-
+        sums_mask = (sums > 0)
         positive_sums = sums[sums_mask]
 
         min_index_in_positive = np.nanargmin(positive_sums)
