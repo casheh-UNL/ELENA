@@ -251,7 +251,7 @@ class Vt_vec:
                     action_over_T_old = self.action_over_T
                     
                     self.phi0_old = self.phi0
-                    self.phi0 = np.arange(self.phi0_min - self.step_phi0, self.phi0_min + 1.1*self.step_phi0, self.step_phi0 / 10)
+                    self.phi0 = np.arange(np.max([self.phi0_min - self.step_phi0, self.min_phi0]), self.phi0_min + 1.1*self.step_phi0, self.step_phi0 / 10)
                     self.step_phi0 /= 10
                     counter += 1
             else:
