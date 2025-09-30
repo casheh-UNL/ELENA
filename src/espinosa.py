@@ -316,6 +316,16 @@ class Vt_vec:
         sums_mask = (sums > 0)
         positive_sums = sums[sums_mask]
 
+        # print(self.T)
+        # print(self.phi0[0], self.phi0[-1], self.step_phi0)
+        # #min_sum_index = np.nanargmin(sums)
+        # for i in range(len(self.phi0)):
+        #     #marker = " <-- MIN" if i == min_sum_index else ""
+        #     marker = ""
+        #     print(f"{self.phi0[i]} -> {sums[i]}{marker}")
+        #     print(f"{self.phi0[i]} -> {self.a0T**2 - self.c*self.Ut3T}")
+        # print("\n")
+
         min_index_in_positive = np.nanargmin(positive_sums)
         original_index = np.where(sums_mask)[0][min_index_in_positive]
         self.phi0_min = self.phi0[original_index]
