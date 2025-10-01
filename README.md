@@ -103,4 +103,5 @@ If you use ELENA in your research, please cite:
 
 ## License
 
-ELENA is distributed under the GPL-3.0 license, which permits the free use and modification of the software for any use. Please read the accompanying LICENSE document for more details of the GPL-3.0 license.
+ELENA is distributed under the **GNU GPL v3.0** license. This means you are free to use, share, and modify the software — including for commercial or research purposes — as long as any version you distribute based on this code remains **open-source under the same license** and **credits the original authors**.
+Please read the accompanying LICENSE document for more details of the GPL-3.0 license.
