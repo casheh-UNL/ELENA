@@ -94,10 +94,14 @@ See the [example notebook](./examples/phase_transition.ipynb) for a complete dem
 If you use ELENA in your research, please cite:
 
 ```bibtex
-@article{elena2025,
-    title={ELENA: a software for fast and precise computation of first order phase transitions and gravitational waves production in particle physics models},
-    author={Costa, Francesco and Hoefken Zink, Jaime and Lucente, Michele and Pascoli, Silvia and Rosauro-Alcaraz, Salvador},
-    year={2025}
+@article{Costa:2025pew,
+    author = "Costa, Francesco and Hoefken Zink, Jaime and Lucente, Michele and Pascoli, Silvia and Rosauro-Alcaraz, Salvador",
+    title = "{ELENA: a software for fast and precise computation of first order phase transitions and gravitational waves production in particle physics models}",
+    eprint = "2510.00289",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ph",
+    month = "9",
+    year = "2025"
 }
 ```
 
