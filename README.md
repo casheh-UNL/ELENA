@@ -32,6 +32,10 @@ In order to run the example notebooks some additional packaged are required. In 
 conda create --name elena -c conda-forge python numpy scipy cosmoTransitions matplotlib ipykernel natpy la_forge
 ```
 
+## Documentation
+
+Detailed documentation about the ELENA and the related physics computations is available in the [companion paper](https://arxiv.org/abs/2510.00289).
+
 ## Quick Start
 From the `./examples` directory run
 
@@ -107,5 +111,5 @@ If you use ELENA in your research, please cite:
 
 ## License
 
-ELENA is distributed under the **GNU GPL v3.0** license. This means you are free to use, share, and modify the software — including for commercial or research purposes — as long as any version you distribute based on this code remains **open-source under the same license** and **credits the original authors**.
+ELENA is distributed under the **GNU GPL v3.0** license. This means you are free to use, share, and modify the software (including for research or commercial purposes) as long as any version you distribute based on this code remains **open-source under the same license** and **credits the original authors**.
 Please read the accompanying LICENSE document for more details of the GPL-3.0 license.
