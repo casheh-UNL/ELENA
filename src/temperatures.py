@@ -360,7 +360,8 @@ def compute_logP_f(m, V_min_value, S3overT, v_w, units = 'GeV', cum_method='cumu
     Gamma_list = Temps**4 * (S3_T / (2 * np.pi))**(3/2) * np.exp(-S3_T)
     
     # V''(phi_f, T) / V'(phi_f, T)
-    ratio_V = np.array([d2VdT2(0, T) / dVdT(0, T) for T in Temps])
+    ratio_V = np.array([d2VdT2(0, T) / dVdT(0, T) for T in Temps]).flatten()
+    # NOTE: HAD TO FLATTEN THIS FOR B-L POTENTIAL FOR SOME REASON
     
     # To store result
     logP_f = np.zeros_like(Temps)
