@@ -5,7 +5,7 @@ try:
 except:
     pass
 
-from utils import convert_units, s_SM
+from utils import convert_units, s_SM, rho_SM, drho_SM_spline, d2rho_SM_spline
 from model import model
 from espinosa import Vt_vec
 from dof_interpolation import g_rho
@@ -347,11 +347,34 @@ def compute_logP_f(m, V_min_value, S3overT, v_w, units = 'GeV', cum_method='cumu
     steps = len(Temps)
     T_step = (Temps[-1] - Temps[0]) * 1e-3
     
-    dVdT = lambda phi, T : (V(np.array([phi]), T + T_step) - V(np.array([phi]), T - T_step)) / (2. * T_step) - s_SM(T)
-    d2VdT2 = lambda phi, T : (dVdT(phi, T + T_step) - dVdT(phi, T - T_step)) / (2. * T_step)
-    
+    # def T_derivative(f, T_step=T_step):
+    #     def dfdT(*args, **kwargs):
+    #         if 'T' not in kwargs:
+    #             raise ValueError("Function must accept a keyword argument 'T'.")
+    #         T = np.asarray(kwargs['T'])
+
+    #         # Vectorized finite difference
+    #         kwargs_plus  = kwargs.copy()
+    #         kwargs_minus = kwargs.copy()
+    #         kwargs_plus['T']  = T + T_step
+    #         kwargs_minus['T'] = T - T_step
+
+    #         f_plus  = np.vectorize(lambda t: f(*args, **{**kwargs, 'T': t}))(T + T_step)
+    #         f_minus = np.vectorize(lambda t: f(*args, **{**kwargs, 'T': t}))(T - T_step)
+
+    #         return (f_plus - f_minus) / (2.0 * T_step)
+    #     return dfdT
+
+    # dVdT = lambda phi, T : (V(np.array([phi]), T + T_step) - V(np.array([phi]), T - T_step)) / (2. * T_step) - s_SM(T)
+    # d2VdT2 = lambda phi, T : (dVdT(phi, T + T_step) - dVdT(phi, T - T_step)) / (2. * T_step)
+
+    dvdT = lambda phi, T: (V(np.array([phi]), T + T_step) - V(np.array([phi]), T - T_step)) / (2. * T_step)
+    dVdT = lambda phi, T: dvdT(phi, T) - drho_SM_spline(T) / 3 # negative entropy density
+    d2VdT2 = lambda phi, T : (dvdT(phi, T + T_step) - dvdT(phi, T - T_step)) / (2. * T_step) - d2rho_SM_spline(T) / 3 # negative ds/dT
+
     # Hubble
-    e_vacuum = np.array([-V_min_value[t] for t in Temps]) 
+    # e_vacuum = np.array([-V_min_value[t] for t in Temps])
+    e_vacuum = np.array([-V_min_value[t] - t*dVdT(0, t) for t in Temps]).flatten() # technically should be multiplied by P_f
     e_radiation = np.pi**2 * g_rho(Temps / convert_units[units]) * Temps**4 / 30
     H = np.sqrt((e_vacuum + e_radiation) / 3) / (M_pl * convert_units[units])
     
@@ -361,23 +384,23 @@ def compute_logP_f(m, V_min_value, S3overT, v_w, units = 'GeV', cum_method='cumu
     
     # V''(phi_f, T) / V'(phi_f, T)
     ratio_V = np.array([d2VdT2(0, T) / dVdT(0, T) for T in Temps]).flatten()
-    # NOTE: HAD TO FLATTEN THIS FOR B-L POTENTIAL FOR SOME REASON
+    # NOTE: HAD TO FLATTEN THIS AND e_vacuum FOR B-L POTENTIAL FOR SOME REASON
     
     # To store result
     logP_f = np.zeros_like(Temps)
     
     # Function for the first integral
     f_ext = ratio_V * Gamma_list / H
-    
+
     for i in range(steps - 1):
         cum_ratio_V = cum_f(ratio_V[i:], x=Temps[i:], initial=0)
-        
+
         f1 = ratio_V[i:] / H[i:] * np.exp(cum_ratio_V / 3.)
         cum_f1 = cum_f(f1, x=Temps[i:], initial=0)
-        
+
         f2 = f_ext[i:] * np.exp(- cum_ratio_V) * cum_f1**3
         cum_f2 = cum_f(f2, x=Temps[i:], initial=0)
-        
+
         logP_f[i] = - 4. / 243. * np.pi * v_w**3 * cum_f2[-1]
     
     return logP_f, Temps, ratio_V, Gamma_list, H

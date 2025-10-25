@@ -16,7 +16,7 @@ temperature = data[:, 0]  # Temperature [GeV]
 g_s_data = data[:, 1]     # g_s values
 g_rho_data = data[:, 2]   # g_rho values
 
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, CubicSpline
 
 # Create interpolation functions
 # Using linear interpolation within data range
@@ -48,3 +48,46 @@ def g_rho(T):
     result = np.where(T > temperature[-1], g_rho_data[-1], 
                      np.where(T < temperature[0], g_rho_data[0], g_rho_interp(T)))
     return result
+
+
+# Using cubic spline interpolation (C^2 differentiable)
+g_rho_spline_interp = CubicSpline(temperature, g_rho_data, bc_type='natural', extrapolate=True)
+ 
+def g_rho_spline(T):
+    """
+    Smooth g_rho interpolation using a cubic spline.
+    For T outside data range, extrapolates smoothly.
+    """
+    return g_rho_spline_interp(T)
+
+def dg_rho_spline(T):
+    """
+    First derivative of g_rho with respect to T.
+    Computed analytically from the cubic spline.
+    """
+    return g_rho_spline_interp(T, 1)  # 1 → first derivative
+    # # The spline derivative isn't particularly smooth:
+    # g = lambda T : g_rho_spline(T)
+    # T_eps = 1e-6 * T
+    
+    # dg = g(T+T_eps)
+    # dg -= g(T-T_eps)
+    # dg *= 1./(2*T_eps)
+
+    # return dg
+
+def d2g_rho_spline(T):
+    """
+    Second derivative of g_rho with respect to T.
+    Computed analytically from the cubic spline.
+    """
+    return g_rho_spline_interp(T, 2)  # 2 → second derivative
+    # # The spline second derivative isn't particularly smooth:
+    # dg = lambda T : dg_rho_spline(T)
+    # T_eps = 1e-6 * T
+    
+    # d2g = dg(T+T_eps)
+    # d2g -= dg(T-T_eps)
+    # d2g *= 1./(2*T_eps)
+
+    # return d2g

@@ -6,7 +6,7 @@ from dof_interpolation import g_rho
 
 def cs2(T, m, true_vev, units = 'GeV'):
         speed2 = m.dVdT(true_vev[T], T, include_radiation=True, include_SM = True, units = units) / (T * m.d2VdT2(true_vev[T], T, include_radiation=True, include_SM = True, units = units))
-        return min(1/3, speed2)
+        return min(1/3, speed2.flatten())
 
 
 def alpha_th_bar(T, m, V_min_value, false_vev, true_vev, units = 'GeV'):

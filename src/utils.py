@@ -1,7 +1,7 @@
 # Here we store useful functions and constants
 
 import numpy as np
-from dof_interpolation import g_rho, g_s
+from dof_interpolation import g_rho, g_s, g_rho_spline, dg_rho_spline, d2g_rho_spline
 
 M_pl = 2.4353234600842885e+18
 
@@ -20,6 +20,23 @@ def s_SM(T, units = 'GeV'):
 
 def rho_SM(T, units = 'GeV'):
     return (np.pi**2 / 30) * g_rho(T / convert_units[units]) * T**4
+
+def rho_SM_spline(T, units = 'GeV'):
+    T_units = T / convert_units[units]
+    return (np.pi**2 / 30) * g_rho_spline(T_units) * T**4
+def drho_SM_spline(T, units = 'GeV'):
+    T_units = T / convert_units[units]
+    return (np.pi**2 / 30) * (
+        dg_rho_spline(T_units) * T**4 \
+        + 4*g_rho_spline(T_units) * T**3
+    )
+def d2rho_SM_spline(T, units = 'GeV'):
+    T_units = T / convert_units[units]
+    return (np.pi**2 / 30) * (
+        0*d2g_rho_spline(T_units) * T**4 # !!! the second derivative of the data is simply too sporatic
+        + 4*dg_rho_spline(T_units) * T**3
+        + 4*dg_rho_spline(T_units) * T**3 + 12*g_rho_spline(T_units) * T**2
+    )
 
 
 def interpolation_narrow(y, x, target):
