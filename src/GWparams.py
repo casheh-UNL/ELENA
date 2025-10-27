@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.linalg import lstsq
 from scipy.integrate import cumulative_trapezoid
+from scipy.optimize import minimize_scalar
 
 from dof_interpolation import g_rho
 
@@ -116,3 +117,66 @@ class GW_SuperCooled:
         f_star = np.asarray(f_star)
 
         return self.Omegah2coll(f_star) + self.Omegah2sw(f_star) + self.Omegah2turb(f_star)
+    
+    
+
+    def find_peak(self, f_min=None, f_max=None, verbose=False):
+        '''
+        Find the peak frequency and value of the total GW spectrum.
+
+        Parameters
+        ----------
+        f_min : float, optional
+            Minimum frequency (in the same units as f_star).
+            Defaults to 1e-3 * min(self.f_col, self.f_sw, self.f_turb).
+        f_max : float, optional
+            Maximum frequency (in the same units as f_star).
+            Defaults to 1e3 * max(self.f_col, self.f_sw, self.f_turb).
+        verbose : bool, optional
+            If True, also returns the peaks of each contribution
+            (collisions, sound waves, turbulence).
+
+        Returns
+        -------
+        tuple
+            (f_peak_total, Omega_peak_total)
+            If verbose=True, also returns:
+            (f_peak_col, Omega_peak_col),
+            (f_peak_sw, Omega_peak_sw),
+            (f_peak_turb, Omega_peak_turb)
+        '''
+        # Define search range if not provided
+        if f_min is None:
+            f_min = 1e-3 * min(self.f_col, self.f_sw, self.f_turb)
+        if f_max is None:
+            f_max = 1e3 * max(self.f_col, self.f_sw, self.f_turb)
+
+        # Helper to maximize a positive function by minimizing its negative
+        def neg_total(f):
+            return -self.Omegah2(f)
+
+        res_total = minimize_scalar(neg_total, bounds=(f_min, f_max), method='bounded')
+        f_peak_total = res_total.x
+        Omega_peak_total = -res_total.fun
+
+        if not verbose:
+            return f_peak_total, Omega_peak_total
+
+        # Compute individual peaks
+        def neg_col(f): return -self.Omegah2coll(f)
+        def neg_sw(f): return -self.Omegah2sw(f)
+        def neg_turb(f): return -self.Omegah2turb(f)
+
+        # Use tighter bounds centered on each characteristic frequency
+        res_col = minimize_scalar(neg_col, bounds=(1e-2*self.f_col, 1e2*self.f_col), method='bounded')
+        res_sw = minimize_scalar(neg_sw, bounds=(1e-2*self.f_sw, 1e2*self.f_sw), method='bounded')
+        res_turb = minimize_scalar(neg_turb, bounds=(1e-2*self.f_turb, 1e2*self.f_turb), method='bounded')
+
+        peaks = {
+            "total": (f_peak_total, Omega_peak_total),
+            "collision": (res_col.x, -res_col.fun),
+            "sound_wave": (res_sw.x, -res_sw.fun),
+            "turbulence": (res_turb.x, -res_turb.fun)
+        }
+
+        return peaks["total"], peaks["collision"], peaks["sound_wave"], peaks["turbulence"]
