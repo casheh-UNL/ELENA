@@ -1,3 +1,8 @@
+# Adapts expressions from https://arxiv.org/abs/1903.09642. While this paper focuses on supercooled
+# phase transitions, they "note that the expressions given below for the GW spectra are more general."
+# Generalizing to slower wall speeds can be done by neglecting kappa_col and using kappa_sw given in
+# https://arxiv.org/abs/1004.4187.
+
 import numpy as np
 from numpy.linalg import lstsq
 from scipy.integrate import cumulative_trapezoid
@@ -115,7 +120,6 @@ class GW_SuperCooled:
 
     def Omegah2(self, f_star):
         f_star = np.asarray(f_star)
-
         return self.Omegah2coll(f_star) + self.Omegah2sw(f_star) + self.Omegah2turb(f_star)
     
     
