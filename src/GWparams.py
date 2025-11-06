@@ -166,21 +166,26 @@ class GW_SuperCooled:
         if not verbose:
             return f_peak_total, Omega_peak_total
 
-        # Compute individual peaks
-        def neg_col(f): return -self.Omegah2coll(f)
-        def neg_sw(f): return -self.Omegah2sw(f)
-        def neg_turb(f): return -self.Omegah2turb(f)
+        # # Compute individual peaks
+        # def neg_col(f): return -self.Omegah2coll(f)
+        # def neg_sw(f): return -self.Omegah2sw(f)
+        # def neg_turb(f): return -self.Omegah2turb(f)
 
-        # Use tighter bounds centered on each characteristic frequency
-        res_col = minimize_scalar(neg_col, bounds=(1e-2*self.f_col, 1e2*self.f_col), method='bounded')
-        res_sw = minimize_scalar(neg_sw, bounds=(1e-2*self.f_sw, 1e2*self.f_sw), method='bounded')
-        res_turb = minimize_scalar(neg_turb, bounds=(1e-2*self.f_turb, 1e2*self.f_turb), method='bounded')
+        # # Use tighter bounds centered on each characteristic frequency
+        # res_col = minimize_scalar(neg_col, bounds=(1e-2*self.f_col, 1e2*self.f_col), method='bounded')
+        # res_sw = minimize_scalar(neg_sw, bounds=(1e-2*self.f_sw, 1e2*self.f_sw), method='bounded')
+        # res_turb = minimize_scalar(neg_turb, bounds=(1e-2*self.f_turb, 1e2*self.f_turb), method='bounded')
 
+        # peaks = {
+        #     "total": (f_peak_total, Omega_peak_total),
+        #     "collision": (res_col.x, -res_col.fun),
+        #     "sound_wave": (res_sw.x, -res_sw.fun),
+        #     "turbulence": (res_turb.x, -res_turb.fun)
+        # }
         peaks = {
-            "total": (f_peak_total, Omega_peak_total),
-            "collision": (res_col.x, -res_col.fun),
-            "sound_wave": (res_sw.x, -res_sw.fun),
-            "turbulence": (res_turb.x, -res_turb.fun)
+            "total":      (f_peak_total, Omega_peak_total),
+            "collision":  (self.Omegah2coll(self.f_col), self.f_col),
+            "sound_wave": (self.Omegah2sw(self.f_sw), self.f_sw),
+            "turbulence": (self.Omegah2turb(self.f_turb), self.f_turb)
         }
-
         return peaks["total"], peaks["collision"], peaks["sound_wave"], peaks["turbulence"]
