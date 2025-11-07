@@ -184,8 +184,8 @@ class GW_SuperCooled:
         # }
         peaks = {
             "total":      (f_peak_total, Omega_peak_total),
-            "collision":  (self.Omegah2coll(self.f_col), self.f_col),
-            "sound_wave": (self.Omegah2sw(self.f_sw), self.f_sw),
-            "turbulence": (self.Omegah2turb(self.f_turb), self.f_turb)
+            "collision":  (self.f_col, self.Omegah2coll(self.f_col)),
+            "sound_wave": (self.f_sw, self.Omegah2sw(self.f_sw)),
+            "turbulence": (self.f_turb, self.Omegah2turb(self.f_turb))
         }
         return peaks["total"], peaks["collision"], peaks["sound_wave"], peaks["turbulence"]
