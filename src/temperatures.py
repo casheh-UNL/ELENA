@@ -334,7 +334,7 @@ def refine_Tmin(T_min, V_physical, dV_physical, maxvev, log_10_precision = 6):
         return T_min
 
 
-def compute_logP_f(m, V_min_value, S3overT, v_w, units = 'GeV', cum_method='cumulative_simpson'):
+def compute_logP_f(m, V_min_value, S3overT, v_w, units = 'GeV', cum_method='cumulative_simpson', R_0=0.0):
     # Method
     if cum_method == 'cumulative_simpson':
         cum_f = cumulative_simpson
@@ -347,24 +347,6 @@ def compute_logP_f(m, V_min_value, S3overT, v_w, units = 'GeV', cum_method='cumu
     steps = len(Temps)
     T_step = (Temps[-1] - Temps[0]) * 1e-3
     
-    # def T_derivative(f, T_step=T_step):
-    #     def dfdT(*args, **kwargs):
-    #         if 'T' not in kwargs:
-    #             raise ValueError("Function must accept a keyword argument 'T'.")
-    #         T = np.asarray(kwargs['T'])
-
-    #         # Vectorized finite difference
-    #         kwargs_plus  = kwargs.copy()
-    #         kwargs_minus = kwargs.copy()
-    #         kwargs_plus['T']  = T + T_step
-    #         kwargs_minus['T'] = T - T_step
-
-    #         f_plus  = np.vectorize(lambda t: f(*args, **{**kwargs, 'T': t}))(T + T_step)
-    #         f_minus = np.vectorize(lambda t: f(*args, **{**kwargs, 'T': t}))(T - T_step)
-
-    #         return (f_plus - f_minus) / (2.0 * T_step)
-    #     return dfdT
-
     # dVdT = lambda phi, T : (V(np.array([phi]), T + T_step) - V(np.array([phi]), T - T_step)) / (2. * T_step) - s_SM(T)
     # d2VdT2 = lambda phi, T : (dVdT(phi, T + T_step) - dVdT(phi, T - T_step)) / (2. * T_step)
 
@@ -396,7 +378,7 @@ def compute_logP_f(m, V_min_value, S3overT, v_w, units = 'GeV', cum_method='cumu
         cum_ratio_V = cum_f(ratio_V[i:], x=Temps[i:], initial=0)
 
         f1 = ratio_V[i:] / H[i:] * np.exp(cum_ratio_V / 3.)
-        cum_f1 = cum_f(f1, x=Temps[i:], initial=0) # domain radius
+        cum_f1 = cum_f(f1, x=Temps[i:], initial=0) + R_0 # domain radius
 
         f2 = f_ext[i:] * np.exp(- cum_ratio_V) * cum_f1**3
         cum_f2 = cum_f(f2, x=Temps[i:], initial=0)
@@ -490,7 +472,6 @@ def compute_Gamma_f(m, V_min_value, S3overT, v_w, logP_f, units='GeV', cum_metho
 
         # The 4-fold iterated integral over ordered variables T1<=T2<=T3<=T4:
         # I = ∫_{T}^{Tc} dT1 f(T1) ∫_{T1}^{Tc} dT2 f(T2) ∫_{T2}^{Tc} dT3 f(T3) ∫_{T3}^{Tc} dT4 f(T4)
-        # We compute this efficiently by dynamic cumulative integrals from the end:
 
         # Step A: J3[j] = ∫_{T_j}^{Tc} f(T4) dT4  (integral of f from each point to end)
         cum_f_full = cum_f(f_array, x=T_slice, initial=0.0)  # cumulative from start T to each T_j
@@ -524,14 +505,6 @@ def compute_Gamma_f(m, V_min_value, S3overT, v_w, logP_f, units='GeV', cum_metho
     return Nf_vals, Temps, ratio_V, Gamma_list, H
 
 
-def Nf_bubblesH(Temps, Gamma_f, logP_f, H, ratio_V):
-    '''Mean number of nucleated false-vacuum bubbles per Hubble volume.'''
-    integrand = Gamma_f * (1 - np.exp(logP_f)) * ratio_V / H**4
-    integral = cumulative_trapezoid(np.flip(integrand), initial=0, x=np.flip(Temps))
-
-    return 4 * np.pi / 9 * np.flip(-integral)
-
-
 def R_sepH(Temps, Gamma, logP_f, H, ratio_V):
     steps = len(Temps)
 
@@ -548,6 +521,27 @@ def R_sepH(Temps, Gamma, logP_f, H, ratio_V):
         n[i] = trapezoid(f1, x=Temps[i:])
 
     return n**(-1/3) * H, n**(-1/3)
+
+def R_meanH(Temps, Gamma, logP_f, H, ratio_V, R_sepH_res, R_0=0.):
+    '''Mean bubble radius as defined in https://arxiv.org/abs/2305.02357 eq. (5.43).'''
+    steps = len(Temps) # Temps is given in ascending order; taking care of the negative sign in the t-T Jacobian
+
+    n_over_H3 = R_sepH_res**(-3)
+    # n = R_sepH_res**(-3)
+    
+    integral = np.zeros_like(Temps)
+    # function for the second integral
+    f = Gamma * ratio_V * np.exp(logP_f) / (3 * H)
+    for i in range(steps - 1):
+        a_ratio_int = cumulative_trapezoid(ratio_V[i:], x=Temps[i:], initial=0) / 3
+
+        R_integrand = ratio_V[i:] / (3*H[i:]) * np.exp(a_ratio_int)
+        R = cumulative_trapezoid(R_integrand, x=Temps[i:], initial=0) + R_0 # domain radius
+
+        f2 = f[i:] * np.exp(-3*a_ratio_int) * R
+        integral[i] = trapezoid(f2, x=Temps[i:])
+
+    return integral/n_over_H3 / H**2, integral/n_over_H3 / H**3
 
 
 def R0(T, S3_T, V_exit):

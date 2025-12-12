@@ -96,7 +96,8 @@ class GW_SuperCooled:
         self.freq_redshift = 1.65e-5 * (self.T_reh / (100 * self.GeV)) * (self.g_rad_T_reh / 100)**(1/6)  / H_star
 
         self.f_col = self.freq_redshift * 0.51 / R_star
-        self.f_sw = self.freq_redshift * 3.4 / ((self.v_w - self.c_s) * self.R_star)
+        # self.f_sw = self.freq_redshift * 3.4 / ((self.v_w - self.c_s) * self.R_star)
+        self.f_sw = 2.6e-5 * (self.T_reh / (100 * self.GeV)) * (self.g_rad_T_reh / 100)**(1/6) / (self.R_star * H_star) # eq. (31) of https://arxiv.org/pdf/1910.13125
         self.f_turb = self.freq_redshift * 3.9 / ((self.v_w - self.c_s) * self.R_star)
 
     def E_wall_over_E_V(self):
